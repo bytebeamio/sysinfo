@@ -72,7 +72,6 @@ impl CpusWrapper {
         let buf = BufReader::new(f);
 
         self.need_cpus_update = false;
-        let mut i: usize = 0;
         let first = self.cpus.is_empty();
         let mut it = buf.split(b'\n');
         let (vendor_id, brand) = if first {
@@ -106,6 +105,7 @@ impl CpusWrapper {
                 );
             }
             if first || !only_update_global_cpu {
+                let mut num_cpus: usize = 0;
                 while let Some(Ok(line)) = it.next() {
                     if &line[..3] != b"cpu" {
                         break;
@@ -131,7 +131,7 @@ impl CpusWrapper {
                         ));
                     } else {
                         parts.next(); // we don't want the name again
-                        self.cpus[i].set(
+                        self.cpus[num_cpus].set(
                             parts.next().map(to_u64).unwrap_or(0),
                             parts.next().map(to_u64).unwrap_or(0),
                             parts.next().map(to_u64).unwrap_or(0),
@@ -145,7 +145,11 @@ impl CpusWrapper {
                         );
                     }
 
-                    i += 1;
+                    num_cpus += 1;
+                }
+                for cpu in &mut self.cpus[num_cpus..] {
+                    cpu.cpu_usage = 0.0;
+                    cpu.frequency = 0;
                 }
             }
         }
