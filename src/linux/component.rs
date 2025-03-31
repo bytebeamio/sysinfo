@@ -272,6 +272,30 @@ impl Component {
         Some(())
     }
 
+    fn from_thermal_zone(components: &mut Vec<Component>, folder: &Path) -> Option<()> {
+        if !folder.is_dir() || !folder.file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .starts_with("thermal_zone") {
+            return Some(());
+        }
+
+        let label_file = folder.join("type");
+        let temp_file = folder.join("temp");
+
+        let label = get_file_line(&label_file, 64)?;
+        let temperature = get_temperature_from_file(&temp_file)?;
+
+        let mut component = Component::default();
+        component.name = label.clone();
+        component.label = label;
+        component.input_file = Some(temp_file);
+        component.temperature = Some(temperature);
+        components.push(component);
+
+        Some(())
+    }
+
     /// Compute a label out of available information.
     /// See the table in `Component::label`'s documentation.
     fn format_label(&self, class: &str, id: u32) -> String {
@@ -346,7 +370,13 @@ pub(crate) fn get_components() -> Vec<Component> {
             }
             Component::from_hwmon(&mut components, &entry);
         }
-        components.sort_by(|c1, c2| c1.label.to_lowercase().cmp(&c2.label.to_lowercase()));
     }
+    if let Ok(dir) = read_dir(Path::new("/sys/class/thermal")) {
+        for entry in dir.flatten() {
+            let entry = entry.path();
+            Component::from_thermal_zone(&mut components, &entry);
+        }
+    }
+    components.sort_by(|c1, c2| c1.label.to_lowercase().cmp(&c2.label.to_lowercase()));
     components
 }

@@ -420,29 +420,8 @@ fn interpret_input(input: &str, sys: &mut System) -> bool {
 }
 
 fn main() {
-    println!("Getting processes' information...");
-    let mut t = System::new_all();
-    println!("Done.");
-    let t_stin = io::stdin();
-    let mut stin = t_stin.lock();
-    let mut done = false;
-
-    println!("To get the commands' list, enter 'help'.");
-    while !done {
-        let mut input = String::new();
-        write!(&mut io::stdout(), "> ");
-        io::stdout().flush();
-
-        stin.read_line(&mut input);
-        if input.is_empty() {
-            // The string is empty, meaning there is no '\n', meaning
-            // that the user used CTRL+D so we can just quit!
-            println!("\nLeaving, bye!");
-            break;
-        }
-        if (&input as &str).ends_with('\n') {
-            input.pop();
-        }
-        done = interpret_input(input.as_ref(), &mut t);
-    }
+    let mut sys = System::new();
+    sys.refresh_components_list();
+    sys.refresh_components();
+    dbg!(sys.components());
 }
