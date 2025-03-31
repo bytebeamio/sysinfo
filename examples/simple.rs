@@ -2,7 +2,7 @@
 
 #![crate_type = "bin"]
 #![allow(unused_must_use, non_upper_case_globals)]
-#![allow(clippy::manual_range_contains)]
+#![allow(clippy::manual_range_contains, unused)]
 
 extern crate sysinfo;
 
@@ -421,7 +421,7 @@ fn interpret_input(input: &str, sys: &mut System) -> bool {
 
 fn main() {
     let mut sys = System::new();
-    sys.refresh_components_list();
-    sys.refresh_components();
-    dbg!(sys.components());
+    sys.refresh_disks_list();
+    sys.refresh_disks();
+    println!("{:#?}", sys.disks());
 }

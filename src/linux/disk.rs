@@ -9,6 +9,7 @@ use std::fs;
 use std::mem;
 use std::os::unix::ffi::OsStrExt;
 use std::path::{Path, PathBuf};
+use std::collections::HashSet;
 
 macro_rules! cast {
     ($x:expr) => {
@@ -201,7 +202,7 @@ fn get_all_disks_inner(content: &str) -> Vec<Disk> {
         _ => Vec::new(),
     };
 
-    content
+    let mount_points = content
         .lines()
         .map(|line| {
             let line = line.trim_start();
@@ -253,7 +254,17 @@ fn get_all_disks_inner(content: &str) -> Vec<Disk> {
                 &removable_entries,
             )
         })
-        .collect()
+        .collect::<Vec<_>>();
+
+    let mut unduplicated_mount_points = Vec::with_capacity(mount_points.len());
+    let mut seen_mount_points = HashSet::with_capacity(mount_points.len());
+    for mount_point in mount_points {
+        if !seen_mount_points.contains(&mount_point.device_name) {
+            seen_mount_points.insert(mount_point.device_name.to_owned());
+            unduplicated_mount_points.push(mount_point);
+        }
+    }
+    unduplicated_mount_points
 }
 
 pub(crate) fn get_all_disks() -> Vec<Disk> {
