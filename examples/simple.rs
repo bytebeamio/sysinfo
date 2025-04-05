@@ -424,4 +424,8 @@ fn main() {
     sys.refresh_disks_list();
     sys.refresh_disks();
     println!("{:#?}", sys.disks());
+
+    sys.refresh_components_list();
+    sys.refresh_components();
+    dbg!(sys.components());
 }

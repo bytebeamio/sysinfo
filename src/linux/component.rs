@@ -284,6 +284,9 @@ impl Component {
         let temp_file = folder.join("temp");
 
         let label = get_file_line(&label_file, 64)?;
+        if !(label.contains("cpu") || label.contains("gpu") || label.contains("soc")) {
+            return None;
+        }
         let temperature = get_temperature_from_file(&temp_file)?;
 
         let mut component = Component::default();
